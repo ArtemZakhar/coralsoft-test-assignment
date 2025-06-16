@@ -10,7 +10,10 @@ import router from './routes';
 const app = express();
 const port = process.env.PORT || 3001;
 
-const allowedOrigins = [process.env.CORS_ORIGIN];
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://coralsoft-test-assignment-frontend.vercel.app',
+];
 
 const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
