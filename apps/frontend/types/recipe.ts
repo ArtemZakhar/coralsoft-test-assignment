@@ -17,12 +17,14 @@ export interface Recipe {
 
 export type CreateRecipeInput = Omit<Recipe, 'createdAt' | 'updatedAt'>;
 
-export type UpdateRecipeInput = Partial<CreateRecipeInput>; 
+export type UpdateRecipeInput = Partial<CreateRecipeInput>;
 
 export interface Category {
-  title: string;
+  strCategory: string;
 }
 
 export interface Area {
-  title: string;
+  strArea: string;
 }
+
+export type GetRecipesResponse = { recipes: Recipe[]; totalRecipes: number };

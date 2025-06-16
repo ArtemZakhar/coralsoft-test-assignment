@@ -1,3 +1,5 @@
+import { MealResponseType } from './meal';
+
 export interface Recipe {
   id: string;
   name: string;
@@ -19,4 +21,10 @@ export interface Recipe {
 
 export type CreateRecipeInput = Omit<Recipe, 'id' | 'createdAt' | 'updatedAt'>;
 
-export type UpdateRecipeInput = Partial<CreateRecipeInput>; 
+export type UpdateRecipeInput = Partial<CreateRecipeInput>;
+
+export type RecipeResponseType = {
+  meals: MealResponseType[];
+};
+
+export type RecipeDataType = { recipes: Recipe[]; totalRecipes: number };

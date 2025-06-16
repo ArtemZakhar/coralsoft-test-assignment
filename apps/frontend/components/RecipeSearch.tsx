@@ -2,33 +2,32 @@
 
 import { useEffect, useState } from 'react';
 import { getCategories, getAreas } from '../lib/api';
-interface Category {
-  category: string;
-}
+import useDebounce from '../hooks/useDebounce';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { getUpdatedSearchParams } from '../utils/searchHelper';
+import { searchParamsKeys } from '../constant/searchParams';
+import { routePaths } from '../constant/routePaths';
+import { Area, Category } from '../types/recipe';
 
-interface Area {
-  name: string;
-}
-
-interface RecipeSearchProps {
-  onSearch: (query: string) => void;
-  onFilterChange: (filters: { category: string; area: string }) => void;
-}
-
-export function RecipeSearch({ onSearch, onFilterChange }: RecipeSearchProps) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [category, setCategory] = useState('');
-  const [area, setArea] = useState('');
+export function RecipeSearch() {
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [categories, setCategories] = useState<Category[]>([]);
   const [areas, setAreas] = useState<Area[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const debouncedSearchValue = useDebounce(searchQuery);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const category = searchParams.get(searchParamsKeys.CATEGORY) || '';
+  const area = searchParams.get(searchParamsKeys.AREA) || '';
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [categoriesResponse, areasResponse] = await Promise.all([
           getCategories(),
-          getAreas()
+          getAreas(),
         ]);
 
         const categoriesData: any = categoriesResponse;
@@ -47,34 +46,55 @@ export function RecipeSearch({ onSearch, onFilterChange }: RecipeSearchProps) {
   }, []);
 
   useEffect(() => {
-    onSearch(searchQuery);
-  }, [searchQuery])
-  
+    if (debouncedSearchValue.trim().length !== 0) {
+      const newSearchParams = getUpdatedSearchParams(searchParams, {
+        [searchParamsKeys.Q]: debouncedSearchValue,
+      });
+
+      router.push(`${routePaths.recipes.root}?${newSearchParams}`);
+    }
+  }, [debouncedSearchValue]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
 
   const handleSearch = () => {
-    onSearch(searchQuery);
+    const newSearchParams = getUpdatedSearchParams(searchParams, {
+      [searchParamsKeys.Q]: searchQuery,
+    });
+
+    router.push(`${routePaths.recipes.root}?${newSearchParams}`);
   };
 
   const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newCategory = e.target.value;
-    setCategory(newCategory);
-    onFilterChange({ category: newCategory, area });
+    const newSearchParams = getUpdatedSearchParams(searchParams, {
+      [searchParamsKeys.CATEGORY]: newCategory.length > 0 ? newCategory : null,
+    });
+
+    router.push(`${routePaths.recipes.root}?${newSearchParams}`);
   };
 
   const handleAreaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newArea = e.target.value;
-    setArea(newArea);
-    onFilterChange({ category, area: newArea });
+    const newSearchParams = getUpdatedSearchParams(searchParams, {
+      [searchParamsKeys.AREA]: newArea.length > 0 ? newArea : null,
+    });
+
+    router.push(`${routePaths.recipes.root}?${newSearchParams}`);
   };
 
   const handleReset = () => {
-    setIsLoading(true)
+    const newSearchParams = getUpdatedSearchParams(searchParams, {
+      [searchParamsKeys.Q]: null,
+      [searchParamsKeys.CATEGORY]: null,
+      [searchParamsKeys.AREA]: null,
+    });
+
     setSearchQuery('');
-    setArea('');
+
+    router.push(`${routePaths.recipes.root}?${newSearchParams}`);
   };
 
   return (
@@ -87,10 +107,7 @@ export function RecipeSearch({ onSearch, onFilterChange }: RecipeSearchProps) {
           onChange={handleSearchChange}
           className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
         />
-        <button
-          onClick={handleSearch}
-          className="btn btn-primary"
-        >
+        <button onClick={handleSearch} className="btn btn-primary">
           Search
         </button>
       </div>
@@ -99,15 +116,16 @@ export function RecipeSearch({ onSearch, onFilterChange }: RecipeSearchProps) {
           value={category}
           onChange={handleCategoryChange}
           className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-          disabled={!isLoading}
+          disabled={isLoading}
         >
           <option value="">All Categories</option>
-          {categories.map((cat) => (
-            <option key={cat.category} value={cat.category}>
-              {cat.category}
+          {categories.map(({ strCategory }) => (
+            <option key={strCategory} value={strCategory}>
+              {strCategory}
             </option>
           ))}
         </select>
+
         <select
           value={area}
           onChange={handleAreaChange}
@@ -115,20 +133,17 @@ export function RecipeSearch({ onSearch, onFilterChange }: RecipeSearchProps) {
           disabled={isLoading}
         >
           <option value="">All Areas</option>
-          {areas.map((area) => (
-            <option key={area.name} value={area.name}>
-              {area.name}
+          {areas.map(({ strArea }) => (
+            <option key={strArea} value={strArea}>
+              {strArea}
             </option>
           ))}
         </select>
 
-        <button
-          onClick={handleReset}
-          className="btn btn-primary"
-        >
+        <button onClick={handleReset} className="btn btn-primary">
           Reset
         </button>
       </div>
     </div>
   );
-} 
+}

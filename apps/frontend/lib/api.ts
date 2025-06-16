@@ -1,74 +1,136 @@
-import { Recipe, CreateRecipeInput, UpdateRecipeInput, Category, Area } from '../types/recipe';
+import { revalidateData } from '../app/actions/revalidateData';
+import { apiPaths } from '../constant/apiPaths';
+import {
+  Area,
+  Category,
+  CreateRecipeInput,
+  GetRecipesResponse,
+  Recipe,
+  UpdateRecipeInput,
+} from '../types/recipe';
+import { client } from '../utils/client';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const RECIPES_TAG = 'recipes';
+const STARRED_RECIPE_TAG = 'starred-recipes';
+const RECIPE_TAG = 'recipe';
 
-export async function getRecipes(): Promise<Recipe[]> {
-  const res = await fetch(`${API_URL}/recipes`);
-  if (!res.ok) throw new Error('Failed to fetch recipes');
-  return res.json();
+export async function getRecipes(query?: string): Promise<GetRecipesResponse> {
+  try {
+    let url = apiPaths.recipes.root;
+
+    if (query) {
+      url += `?${query}`;
+    }
+    const data = await client.get<GetRecipesResponse>({
+      url,
+      tags: [RECIPES_TAG],
+      noCache: true,
+    });
+    return data;
+  } catch (error) {
+    console.error('Failed to fetch recipes: ', error);
+    throw error;
+  }
 }
 
 export async function getRecipe(id: string): Promise<Recipe> {
-  const res = await fetch(`${API_URL}/recipes/${id}`);
-  if (!res.ok) throw new Error('Failed to fetch recipe');
-  return res.json();
+  try {
+    return await client.get<Recipe>({
+      url: apiPaths.recipes.byId(id),
+      tags: [`${RECIPE_TAG}-${id}`],
+    });
+  } catch (error) {
+    console.error('Failed to fetch recipe: ', error);
+    throw error;
+  }
 }
 
 export async function createRecipe(data: CreateRecipeInput): Promise<Recipe> {
-  const res = await fetch(`${API_URL}/recipes`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error('Failed to create recipe');
-  return res.json();
+  try {
+    const newRecipe = await client.post<Recipe>({ url: apiPaths.recipes.root, data });
+    revalidateData([RECIPES_TAG]);
+    return newRecipe;
+  } catch (error) {
+    console.error('Failed to create recipe', error);
+    throw error;
+  }
 }
 
 export async function updateRecipe(id: string, data: UpdateRecipeInput): Promise<Recipe> {
-  const res = await fetch(`${API_URL}/recipes/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error('Failed to update recipe');
-  return res.json();
+  try {
+    const newRecipe = await client.put<Recipe>({ url: apiPaths.recipes.byId(id), data });
+    revalidateData([RECIPES_TAG, STARRED_RECIPE_TAG, `${RECIPE_TAG}-${id}`]);
+
+    return newRecipe;
+  } catch (error) {
+    console.error('Failed to update recipe: ', error);
+    throw error;
+  }
 }
 
 export async function deleteRecipe(id: string): Promise<void> {
-  const res = await fetch(`${API_URL}/recipes/${id}`, {
-    method: 'DELETE',
-  });
-  if (res.ok) throw new Error('Failed to delete recipe');
+  try {
+    await client.delete({ url: apiPaths.recipes.byId(id) });
+    revalidateData([RECIPES_TAG]);
+  } catch (error) {
+    console.error('Failed to delete recipe: ', error);
+    throw error;
+  }
 }
 
 export async function getRandomRecipe(): Promise<Recipe> {
-  const res = await fetch(`${API_URL}/random`);
-  if (!res.ok) throw new Error('Failed to fetch random recipe');
-  return res.json();
+  try {
+    const data = await client.get<Recipe>({ url: apiPaths.recipes.random });
+    return data;
+  } catch (error) {
+    console.error('Failed to fetch random recipe: ', error);
+    throw error;
+  }
 }
 
-export async function getStarredRecipes(): Promise<Recipe[]> {
-  const res = await fetch(`${API_URL}/starred`);
-  if (res.ok) throw new Error('Failed to fetch starred recipes');
-  return res.json();
+export async function getStarredRecipes(query?: string): Promise<GetRecipesResponse> {
+  try {
+    let url = apiPaths.recipes.starred;
+
+    if (query) {
+      url += `?${query}`;
+    }
+
+    const data = await client.get<GetRecipesResponse>({
+      url: url,
+      tags: [STARRED_RECIPE_TAG],
+      noCache: true,
+    });
+
+    return data;
+  } catch (error) {
+    console.error('Failed to fetch starred recipes: ', error);
+    throw error;
+  }
 }
 
 export async function toggleStar(id: string): Promise<Recipe> {
-  const res = await fetch(`${API_URL}/recipes/toggle-star/${id}`, {
-    method: 'POST',
-  });
-  if (!res.ok) throw new Error('Failed to toggle star status');
-  return res.json();
-} 
-export async function getCategories(): Promise<Category[]> {
-  const res = await fetch(`${API_URL}/areas`);
-  if (!res.ok) throw new Error('Failed to fetch areas');
-  return res.json();
+  const data = await client.post<Recipe>({ url: apiPaths.recipes.toggleStar(id) });
+  revalidateData([RECIPES_TAG, STARRED_RECIPE_TAG]);
+  return data;
 }
 
+export async function getCategories(): Promise<Category[]> {
+  try {
+    const data = await client.get<Category[]>({ url: apiPaths.categories.root });
+    return data;
+  } catch (error) {
+    console.error('Failed to fetch categories: ', error);
+    throw error;
+  }
+}
 
 export async function getAreas(): Promise<Area[]> {
-  const res = await fetch(`${API_URL}/categories`);
-  if (!res.ok) throw new Error('Failed to fetch categories');
-  return res.json();
+  try {
+    const data = await client.get<Area[]>({ url: apiPaths.areas.root });
+    return data;
+  } catch (error) {
+    console.error('Failed to fetch areas: ', error);
+    throw error;
+  }
 }
