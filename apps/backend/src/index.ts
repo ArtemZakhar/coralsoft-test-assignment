@@ -10,11 +10,19 @@ import router from './routes';
 const app = express();
 const port = process.env.PORT || 3001;
 
-app.use(
-  cors({
-    origin: process.env.CORS_ORIGIN,
-  })
-);
+const allowedOrigins = [process.env.CORS_ORIGIN];
+
+const corsOptions: cors.CorsOptions = {
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 app.use('/api', router);
