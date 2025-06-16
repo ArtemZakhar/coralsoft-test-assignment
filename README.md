@@ -4,7 +4,6 @@ Welcome! This is a **full-stack take-home task**. It's meant to evaluate your ab
 
 > ⚠️ The codebase is partially complete and intentionally contains inconsistencies, missing features, and oddities. This is part of the test.
 
-
 ## 🏗️ Objective
 
 Fix and complete the recipe app.
@@ -25,7 +24,6 @@ yarn install
 yarn dev
 ```
 
-
 ## 🧰 Tech Stack
 
 - Monorepo: [Turborepo](https://turbo.build/repo)
@@ -43,31 +41,29 @@ yarn dev
 - Use **server-side data fetching** only – no direct API calls from the browser
 - Work within the existing codebase – avoid complete rewrites
 
-
 ## ✅ Completion Checklist
 
 You should aim to:
 
-- [ ] Basic CRUD Operations
-  - [ ] View a list of recipes
-  - [ ] Create a new recipe
-  - [ ] View recipe details
-  - [ ] Edit an existing recipe
-  - [ ] Delete a recipe
-- [ ] Recipe Management
-  - [ ] Implement star/favorite functionality for recipes
-  - [ ] Add search functionality to filter recipes
-  - [ ] Enable random recipe generation during creation
-  - [ ] Implement pagination
-    - [ ] Backend pagination with configurable page size
-    - [ ] Frontend pagination controls and UI
-    - [ ] Maintain pagination state during search/filtering
-- [ ] Code Quality
-  - [ ] Keep code DRY and maintainable
-  - [ ] Add helpful comments for unclear sections
-  - [ ] Ensure proper error handling
-  - [ ] Implement input validation
-
+- [x] Basic CRUD Operations
+  - [x] View a list of recipes
+  - [x] Create a new recipe
+  - [x] View recipe details
+  - [x] Edit an existing recipe
+  - [x] Delete a recipe
+- [x] Recipe Management
+  - [x] Implement star/favorite functionality for recipes
+  - [x] Add search functionality to filter recipes
+  - [x] Enable random recipe generation during creation
+  - [x] Implement pagination
+    - [x] Backend pagination with configurable page size
+    - [x] Frontend pagination controls and UI
+    - [x] Maintain pagination state during search/filtering
+- [x] Code Quality
+  - [x] Keep code DRY and maintainable
+  - [x] Add helpful comments for unclear sections
+  - [x] Ensure proper error handling
+  - [x] Implement input validation
 
 ## 🧐 Notes & Tips
 

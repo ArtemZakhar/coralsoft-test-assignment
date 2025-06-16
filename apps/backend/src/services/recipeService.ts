@@ -95,7 +95,7 @@ class RecipeService {
       const { meals } = (await axiosInstance.get<RecipeResponseType>(apiPaths.recipes)).data;
 
       if (!!meals.length) {
-        const normalizedMeals = [];
+        const normalizedMeals: Recipe[] = [];
 
         const maxRecipes = Math.min(MAX_RECIPES, meals.length);
 
